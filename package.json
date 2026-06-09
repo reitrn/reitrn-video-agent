@@ -4,7 +4,6 @@
   "description": "Local video upload agent for reitrnhub",
   "main": "src/main.js",
   "scripts": {
-    "prepare": "node scripts/generate-icon.js",
     "start": "electron .",
     "build": "electron-builder --win --publish never",
     "build:release": "electron-builder --win --publish always"

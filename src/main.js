@@ -1,4 +1,4 @@
-const { app, Tray, Menu, BrowserWindow, ipcMain, shell, nativeImage, dialog } = require('electron')
+const { app, Tray, Menu, BrowserWindow, ipcMain, shell } = require('electron')
 const path = require('path')
 
 // Single instance lock
@@ -14,25 +14,13 @@ let tray = null
 let setupWindow = null
 let trayInterval = null
 
-// ---------- icon ----------
-
-function buildIcon() {
-  // 16x16 solid indigo square (BGRA on Windows, RGBA elsewhere)
-  const size = 16
-  const buf = Buffer.alloc(size * size * 4)
-  for (let i = 0; i < size * size; i++) {
-    buf[i * 4 + 0] = 241 // B / R
-    buf[i * 4 + 1] = 102 // G
-    buf[i * 4 + 2] = 99  // R / B
-    buf[i * 4 + 3] = 255 // A
-  }
-  return nativeImage.createFromBuffer(buf, { width: size, height: size })
-}
+const ICON_PATH = path.join(__dirname, '..', 'assets', 'icon.ico')
+const TRAY_ICON_PATH = path.join(__dirname, '..', 'assets', 'tray.ico')
 
 // ---------- tray ----------
 
 function setupTray() {
-  tray = new Tray(buildIcon())
+  tray = new Tray(TRAY_ICON_PATH)
   updateTray()
   trayInterval = setInterval(updateTray, 3000)
 }
@@ -61,10 +49,10 @@ function showSetup() {
 
   setupWindow = new BrowserWindow({
     width: 500,
-    height: 340,
+    height: 370,
     resizable: false,
     maximizable: false,
-    icon: buildIcon(),
+    icon: ICON_PATH,
     title: 'reitrn Video Agent — Settings',
     webPreferences: {
       nodeIntegration: true,

@@ -23,7 +23,6 @@
     },
     "files": [
       "src/**/*",
-      "setup.html",
       "assets/**/*"
     ],
     "win": {

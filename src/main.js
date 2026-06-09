@@ -44,7 +44,6 @@ function updateTray() {
     { type: 'separator' },
     { label: status, enabled: false },
     { type: 'separator' },
-    { label: 'Open log file', click: () => shell.openPath(logger.getLogPath()) },
     { label: 'Open upload folder', click: () => shell.openPath('C:\\reitrn-uploads') },
     { type: 'separator' },
     { label: 'Quit', click: () => app.quit() }

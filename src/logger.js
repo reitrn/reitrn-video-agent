@@ -1,15 +1,10 @@
 const fs = require('fs')
 const path = require('path')
-const { app } = require('electron')
 
 const MAX_LOG_BYTES = 5 * 1024 * 1024 // 5MB
+const LOG_PATH = 'C:\\reitrn-uploads\\agent.log.txt'
 
-let _logPath = null
-
-function getLogPath() {
-  if (!_logPath) _logPath = path.join(app.getPath('userData'), 'agent.log')
-  return _logPath
-}
+function getLogPath() { return LOG_PATH }
 
 function log(message) {
   const line = `[${new Date().toISOString()}] ${message}\n`

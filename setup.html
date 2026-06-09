@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reitrn Video Agent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 28px 24px 20px;
+      user-select: none;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .logo {
+      width: 28px; height: 28px;
+      background: #6366f1;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff;
+    }
+
+    h1 { font-size: 15px; font-weight: 600; color: #f8fafc; }
+    .subtitle { font-size: 11px; color: #64748b; margin-top: 1px; }
+
+    .field { margin-bottom: 14px; }
+    label { display: block; font-size: 11px; font-weight: 500; color: #94a3b8; margin-bottom: 5px; letter-spacing: 0.02em; text-transform: uppercase; }
+
+    input {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #f1f5f9;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      transition: border-color 0.15s;
+    }
+    input:focus { outline: none; border-color: #6366f1; }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #save {
+      background: #6366f1;
+      color: #fff;
+    }
+    #save:hover { background: #4f46e5; }
+    #save:active { background: #4338ca; }
+
+    #open-folder {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      flex: 0 0 auto;
+    }
+    #open-folder:hover { background: #263044; color: #cbd5e1; }
+
+    .note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #475569;
+      text-align: center;
+    }
+
+    #status {
+      font-size: 11px;
+      color: #22c55e;
+      text-align: center;
+      margin-top: 8px;
+      min-height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">R</div>
+    <div>
+      <h1>reitrn Video Agent</h1>
+      <div class="subtitle">Auto-upload local videos to reitrnhub</div>
+    </div>
+  </header>
+
+  <div class="field">
+    <label>Watch folder</label>
+    <input id="watchFolder" type="text" spellcheck="false" />
+  </div>
+
+  <div class="field">
+    <label>reitrnhub URL</label>
+    <input id="hubUrl" type="text" spellcheck="false" placeholder="https://hub.reitrn.com" />
+  </div>
+
+  <div class="field">
+    <label>Agent key</label>
+    <input id="agentKey" type="text" spellcheck="false" />
+  </div>
+
+  <div class="actions">
+    <button id="open-folder">Open folder</button>
+    <button id="save">Save &amp; Start</button>
+  </div>
+
+  <div id="status"></div>
+  <p class="note">The agent runs in the system tray and starts automatically on login.</p>
+
+  <script>
+    const { ipcRenderer, shell } = require('electron')
+
+    ipcRenderer.invoke('get-config').then(cfg => {
+      document.getElementById('watchFolder').value = cfg.watchFolder
+      document.getElementById('hubUrl').value = cfg.reitrnHubUrl
+      document.getElementById('agentKey').value = cfg.agentKey
+    })
+
+    document.getElementById('open-folder').addEventListener('click', () => {
+      const folder = document.getElementById('watchFolder').value.trim()
+      shell.openPath(folder)
+    })
+
+    document.getElementById('save').addEventListener('click', () => {
+      const watchFolder = document.getElementById('watchFolder').value.trim()
+      const reitrnHubUrl = document.getElementById('hubUrl').value.trim().replace(/\/$/, '')
+      const agentKey = document.getElementById('agentKey').value.trim()
+
+      if (!watchFolder || !reitrnHubUrl || !agentKey) {
+        document.getElementById('status').textContent = 'All fields are required.'
+        document.getElementById('status').style.color = '#f87171'
+        return
+      }
+
+      ipcRenderer.send('save-config', { watchFolder, reitrnHubUrl, agentKey })
+      document.getElementById('status').textContent = 'Saved. Starting agent…'
+      document.getElementById('status').style.color = '#22c55e'
+    })
+  </script>
+</body>
+</html>

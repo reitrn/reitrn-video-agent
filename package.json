@@ -1,0 +1,47 @@
+{
+  "name": "reitrn-video-agent",
+  "version": "1.0.0",
+  "description": "Local video upload agent for reitrnhub",
+  "main": "src/main.js",
+  "scripts": {
+    "prepare": "node scripts/generate-icon.js",
+    "start": "electron .",
+    "build": "electron-builder --win --publish never",
+    "build:release": "electron-builder --win --publish always"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.reitrn.video-agent",
+    "productName": "reitrn Video Agent",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "setup.html",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false,
+      "createStartMenuShortcut": false,
+      "shortcutName": "reitrn Video Agent"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "reitrn",
+      "repo": "video-agent"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "reitrn-video-agent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Local video upload agent for reitrnhub",
   "main": "src/main.js",
   "scripts": {

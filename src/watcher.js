@@ -7,6 +7,7 @@ const { log } = require('./logger')
 
 const CONCURRENCY = 2
 const MAX_RETRIES = 5
+const REQUEUE_DELAY_MS = 5 * 60_000 // re-enqueue failed files after 5 minutes
 
 let activeUploads = 0
 let queueSize = 0
@@ -69,10 +70,15 @@ async function processFile(jsonPath) {
     try { fs.unlinkSync(webmPath) } catch {}
     try { fs.unlinkSync(jsonPath) } catch {}
     log(`Done: ${meta.inspectionId}`)
+    inFlight.delete(jsonPath)
+    queueSize--
+  } else {
+    // All retries exhausted — re-enqueue after 5 minutes so it tries again automatically
+    log(`Re-queuing ${meta.inspectionId} in ${REQUEUE_DELAY_MS / 60_000} minutes`)
+    inFlight.delete(jsonPath)
+    queueSize--
+    setTimeout(() => enqueue(jsonPath), REQUEUE_DELAY_MS)
   }
-
-  inFlight.delete(jsonPath)
-  queueSize--
 }
 
 async function uploadWithRetry(webmPath, meta, attempt = 0) {

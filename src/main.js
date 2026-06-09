@@ -1,6 +1,8 @@
 const { app, Tray, Menu, shell } = require('electron')
 const path = require('path')
 
+app.setName('reitrn Video Agent')
+
 // Single instance lock
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -18,8 +20,10 @@ app.whenReady().then(() => {
 
   watcher = require('./watcher')
   logger = require('./logger')
+  const { startServer } = require('./server')
 
   logger.log('Agent starting')
+  startServer()
   watcher.startWatcher()
 
   setupTray()

@@ -1,43 +1,40 @@
 const fs = require('fs')
-const { net } = require('electron')
 const { getConfig } = require('./config')
 const { log } = require('./logger')
 
 async function uploadVideo(webmPath, meta) {
   const { reitrnHubUrl, agentKey } = getConfig()
-  const headers = { 'X-Agent-Key': agentKey }
+  const agentHeaders = { 'X-Agent-Key': agentKey }
 
   // 1. Get signed URL
-  const signedUrlResp = await net.fetch(
+  log(`Getting signed URL for ${meta.inspectionId}`)
+  const signedUrlResp = await fetch(
     `${reitrnHubUrl}/api/storage/r2-signed-url?path=${encodeURIComponent(meta.storagePath)}`,
-    { headers }
+    { headers: agentHeaders }
   )
   if (!signedUrlResp.ok) {
     throw new Error(`Signed URL ${signedUrlResp.status}: ${await signedUrlResp.text()}`)
   }
   const { url: signedUrl } = await signedUrlResp.json()
+  log(`Got signed URL for ${meta.inspectionId}`)
 
-  // 2. Stream video to R2 via signed URL
-  const stat = fs.statSync(webmPath)
-  const videoStream = fs.createReadStream(webmPath)
-
-  const uploadResp = await net.fetch(signedUrl, {
+  // 2. Upload video buffer to R2
+  log(`Uploading to R2: ${meta.inspectionId}`)
+  const videoBuffer = fs.readFileSync(webmPath)
+  const uploadResp = await fetch(signedUrl, {
     method: 'PUT',
-    body: videoStream,
-    headers: {
-      'Content-Type': 'video/webm',
-      'Content-Length': String(stat.size)
-    },
-    duplex: 'half'
+    body: videoBuffer,
+    headers: { 'Content-Type': 'video/webm' }
   })
   if (!uploadResp.ok) {
     throw new Error(`R2 PUT ${uploadResp.status}: ${await uploadResp.text()}`)
   }
+  log(`R2 upload complete: ${meta.inspectionId}`)
 
   // 3. Mark uploaded in Firestore via reitrnhub
-  const markResp = await net.fetch(`${reitrnHubUrl}/api/storage/mark-uploaded`, {
+  const markResp = await fetch(`${reitrnHubUrl}/api/storage/mark-uploaded`, {
     method: 'POST',
-    headers: { ...headers, 'Content-Type': 'application/json' },
+    headers: { ...agentHeaders, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       inspectionId: meta.inspectionId,
       collectionPath: meta.collectionPath,
@@ -50,7 +47,6 @@ async function uploadVideo(webmPath, meta) {
   if (!markResp.ok) {
     throw new Error(`mark-uploaded ${markResp.status}: ${await markResp.text()}`)
   }
-
   log(`Marked uploaded: ${meta.inspectionId}`)
 }
 

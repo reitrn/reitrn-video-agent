@@ -9,6 +9,7 @@
     "build:release": "electron-builder --win --publish always"
   },
   "dependencies": {
+    "busboy": "^1.6.0",
     "chokidar": "^3.6.0"
   },
   "devDependencies": {

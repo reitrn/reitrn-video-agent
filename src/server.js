@@ -7,11 +7,8 @@ const { log } = require('./logger')
 
 const PORT = 3011
 
-// Cert installed by the reitrn Print Agent installer — shared across both agents
-const CERT_DIR = path.join(
-  process.env.LOCALAPPDATA,
-  'Programs', 'reitrn-print-agent', 'resources', 'app-extracted', 'assets'
-)
+// Certs bundled with the video agent installer — self-contained, no print agent dependency
+const CERT_DIR = path.join(__dirname, '..', 'assets')
 
 function startServer() {
   let tls
@@ -21,7 +18,7 @@ function startServer() {
       key: fs.readFileSync(path.join(CERT_DIR, 'key.pem'))
     }
   } catch (err) {
-    log(`WARNING: Could not load TLS cert — local server disabled. Is reitrn Print Agent installed? (${err.message})`)
+    log(`WARNING: Could not load TLS cert (${err.message})`)
     return
   }
 

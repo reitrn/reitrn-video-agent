@@ -5,6 +5,21 @@ PCs. Receives webcam inspection videos recorded in the browser, queues them on
 disk, and uploads them to R2 via ReturnHub. Repo: github.com/reitrn/reitrn-video-agent.
 Windows-only. Current version 1.0.3.
 
+## Working rules (regression prevention)
+
+This runs unattended on live warehouse station PCs — a broken release silently
+stops video evidence from uploading.
+
+1. **Plain JS, no compiler net**: after ANY change, run `node --check` on every
+   touched file and start the app (`npm start`) before declaring done. CI
+   syntax-checks all JS on push (`.github/workflows/ci.yml`).
+2. **One concern per change**; do not reformat or refactor adjacent code.
+3. The store-and-forward pipeline (watch folder → upload → orphan backup) is the
+   product. Never make an upload path that can drop a file on failure — files
+   move to `orphaned/`, never get deleted on error.
+4. Releases ship via tag-triggered build (`v*`); warehouse PCs don't auto-update
+   — coordinate installs with the user.
+
 ## Stack
 
 - Electron 31 + electron-builder (NSIS, publishes GitHub releases to

@@ -60,4 +60,28 @@ async function uploadVideo(webmPath, meta) {
   log(`Marked uploaded: ${meta.inspectionId}`)
 }
 
-module.exports = { uploadVideo }
+async function uploadOrphanedVideo(webmPath) {
+  const { reitrnHubUrl, agentKey } = getConfig()
+  const agentHeaders = { 'X-Agent-Key': agentKey }
+  const filename = require('path').basename(webmPath)
+  const storagePath = `orphaned/${filename}`
+
+  // 1. Get signed URL (30s timeout)
+  const signedUrlResp = await withTimeout(
+    fetch(`${reitrnHubUrl}/api/storage/r2-signed-url?path=${encodeURIComponent(storagePath)}`, { headers: agentHeaders }),
+    30_000, 'signed-url'
+  )
+  if (!signedUrlResp.ok) throw new Error(`Signed URL ${signedUrlResp.status}: ${await signedUrlResp.text()}`)
+  const { url: signedUrl } = await signedUrlResp.json()
+
+  // 2. Upload to R2 (10 minute timeout)
+  const videoBuffer = fs.readFileSync(webmPath)
+  const uploadResp = await withTimeout(
+    fetch(signedUrl, { method: 'PUT', body: videoBuffer, headers: { 'Content-Type': 'video/webm' } }),
+    10 * 60_000, 'r2-upload'
+  )
+  if (!uploadResp.ok) throw new Error(`R2 PUT ${uploadResp.status}`)
+  // No mark-uploaded step — no metadata available, video saved under orphaned/
+}
+
+module.exports = { uploadVideo, uploadOrphanedVideo }

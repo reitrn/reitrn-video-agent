@@ -52,6 +52,12 @@ function handleRequest(req, res) {
     return
   }
 
+  if (req.method === 'GET' && req.url === '/status') {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ ok: true, version: require('electron').app.getVersion() }))
+    return
+  }
+
   if (req.method === 'POST' && req.url === '/queue-video') {
     handleQueueVideo(req, res)
     return

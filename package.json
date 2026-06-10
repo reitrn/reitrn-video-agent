@@ -1,6 +1,6 @@
 {
   "name": "reitrn-video-agent",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Local video upload agent for reitrnhub",
   "main": "src/main.js",
   "scripts": {
@@ -28,7 +28,8 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "artifactName": "reitrn-Video-Agent-Setup.exe"
     },
     "nsis": {
       "oneClick": true,

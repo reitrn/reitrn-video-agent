@@ -40,7 +40,8 @@ stops video evidence from uploading.
    with exponential backoff, re-enqueue after 5 min if all retries fail. Files are
    deleted only after successful upload.
 4. `src/uploader.js` uploads via **ReturnHub** (app.reitrn.com): get R2 signed URL
-   (`/api/storage/r2-signed-url`) → PUT webm to R2 (10 min timeout) → mark
+   (`/api/storage/r2-signed-url`) → streamed PUT webm to R2 (stall-based
+   timeout: aborts only if no bytes move for 2 min, 60 min absolute cap) → mark
    uploaded in Firestore (`/api/storage/mark-uploaded`). Auth via `X-Agent-Key`
    header (key baked into `src/config.js` at build time — never copy it into docs).
 
@@ -60,6 +61,9 @@ stops video evidence from uploading.
 - Logs go to **`C:\reitrn-uploads\agent.log.txt`** (deliberate — visible to staff
   next to the videos). Tray menu has "Open upload folder".
 - Tray icon is **white** to distinguish it from the print agent in the same tray.
-- All `fetch` calls are wrapped in timeouts (30s API / 10 min R2 PUT) after
-  upload-reliability fixes — keep timeouts on any new network call.
+- All API `fetch` calls are wrapped in 30s abort timeouts; the R2 PUT uses a
+  streamed `https.request` with a stall-based timeout instead — Node's `fetch`
+  has a hidden 5-minute `headersTimeout` (R2 sends headers only after the full
+  body arrives) that made any upload longer than 5 min impossible (v1.0.5 fix).
+  Keep timeouts on any new network call, and never use `fetch` for large PUTs.
 - Port 3011 (print agent uses 3010). Auto-starts at login, single-instance lock.
